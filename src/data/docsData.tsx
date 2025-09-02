@@ -10,7 +10,7 @@ export const customDocsData = {
   test: {
     title: "test",
     description: "了解我们的 API，掌握所有功能。",
-    tags: ["test", "参考", "开发"],
+    tags: ["test", "参考", "开发","入门"],
     category: "test",
   },
   project1: {

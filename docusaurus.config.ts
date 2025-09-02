@@ -5,7 +5,7 @@ import type * as Preset from "@docusaurus/preset-classic";
 // This runs in Node.js - Don't use client-side code here (browser APIs, JSX...)
 
 const config: Config = {
-  title: "My Site ifjoew",
+  title: "Haoyuehxの Docs Lib",
   tagline: "Dinosaurs are cool",
   //   favicon: "img/favicon.ico",
 
@@ -15,7 +15,7 @@ const config: Config = {
   },
 
   // Set the production url of your site here
-  url: "https://your-docusaurus-site.example.com",
+  url: "https://docs.haoyuehx.dpdns.org/",
   // Set the /<baseUrl>/ pathname under which your site is served
   // For GitHub pages deployment, it is often '/<projectName>/'
   baseUrl: "/",
@@ -80,13 +80,13 @@ const config: Config = {
 
   themeConfig: {
     // Replace with your project's social card
-    image: "img/docusaurus-social-card.jpg",
+    // image: "img/docusaurus-social-card.jpg",
     navbar: {
       title: "Haoyuehx docs",
-      logo: {
-        alt: "My Site Logo",
-        src: "img/logo.svg",
-      },
+    //   logo: {
+    //     alt: "My Site Logo",
+    //     src: "img/logo.svg",
+    //   },
       items: [
         {
           type: "docSidebar",
