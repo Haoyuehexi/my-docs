@@ -1,8 +1,6 @@
 import React, { useState, useMemo } from "react";
-import useDocusaurusContext from "@docusaurus/useDocusaurusContext";
 import { useAllDocsData } from "@docusaurus/plugin-content-docs/client";
 import Link from "@docusaurus/Link";
-// Import the custom data from a separate file
 import { customDocsData } from "../../data/docsData";
 
 interface DocumentCard {
@@ -15,7 +13,7 @@ interface DocumentCard {
   tags?: string[];
 }
 
-const DocumentCardComponent: React.FC<DocumentCard> = ({
+const DocumentListItem: React.FC<DocumentCard> = ({
   title,
   description,
   permalink,
@@ -29,79 +27,156 @@ const DocumentCardComponent: React.FC<DocumentCard> = ({
   };
 
   return (
-    <Link
-      to={permalink}
-      className="block p-6 bg-white rounded-lg border border-gray-200 shadow-md hover:shadow-lg transition-shadow duration-200 no-underline hover:no-underline"
-      style={{ textDecoration: "none", color: "inherit" }}
-    >
-      <div className="space-y-4">
-        <div>
-          <h3 className="text-xl font-semibold text-gray-900 mb-2">{title}</h3>
-          <p className="text-gray-600 line-clamp-3">
-            {description || "暂无描述"}
-          </p>
-        </div>
+    <article className="blog-doc-item">
+      <div className="blog-doc-content">
+        <h2 className="blog-doc-title">
+          <Link to={permalink} className="blog-doc-link">
+            {title}
+          </Link>
+        </h2>
 
-        <div className="flex items-center justify-between text-sm text-gray-500">
-          <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+        <div className="blog-doc-meta">
+          <span className="blog-doc-date">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+              <rect
+                x="3"
+                y="4"
+                width="18"
+                height="18"
+                rx="2"
+                ry="2"
+                stroke="currentColor"
+                strokeWidth="2"
+              />
+              <line
+                x1="16"
+                y1="2"
+                x2="16"
+                y2="6"
+                stroke="currentColor"
+                strokeWidth="2"
+              />
+              <line
+                x1="8"
+                y1="2"
+                x2="8"
+                y2="6"
+                stroke="currentColor"
+                strokeWidth="2"
+              />
+              <line
+                x1="3"
+                y1="10"
+                x2="21"
+                y2="10"
+                stroke="currentColor"
+                strokeWidth="2"
+              />
+            </svg>
+            {formatDate(lastUpdatedAt)}
+          </span>
+
+          <span className="blog-doc-category">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"
+                stroke="currentColor"
+                strokeWidth="2"
+              />
+            </svg>
             {category}
           </span>
-          {lastUpdatedAt && <span>{formatDate(lastUpdatedAt)}</span>}
-        </div>
 
-        {tags.length > 0 && (
-          <div className="flex flex-wrap gap-2">
-            {tags.map((tag, index) => (
-              <span
-                key={index}
-                className="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs"
-              >
-                {tag}
-              </span>
-            ))}
-          </div>
-        )}
+          {tags.map((tag, index) => (
+            <span key={index} className="blog-doc-tag">
+              {tag}
+            </span>
+          ))}
+        </div>
       </div>
-    </Link>
+    </article>
   );
 };
 
-const CategorySidebarComponent: React.FC<{
-  categories: string[];
+const CategorySidebar: React.FC<{
+  categories: { name: string; count: number }[];
+  tags: { name: string; count: number }[];
   selectedCategory: string;
   onCategorySelect: (category: string) => void;
-}> = ({ categories, selectedCategory, onCategorySelect }) => {
+}> = ({ categories, tags, selectedCategory, onCategorySelect }) => {
   return (
-    <div className="bg-white p-6 rounded-lg border border-gray-200">
-      <h3 className="text-lg font-semibold mb-4">文档分类</h3>
-      <ul className="space-y-2">
-        <li>
-          <button
-            onClick={() => onCategorySelect("all")}
-            className={`w-full text-left px-3 py-2 rounded transition-colors ${
-              selectedCategory === "all"
-                ? "bg-blue-100 text-blue-700"
-                : "text-gray-700 hover:bg-gray-100"
-            }`}
-          >
-            所有文档
-          </button>
-        </li>
-        {categories.map((category) => (
-          <li key={category}>
+    <div className="blog-sidebar">
+      <div className="blog-sidebar-section">
+        <h3 className="blog-sidebar-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+            <path
+              d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"
+              stroke="currentColor"
+              strokeWidth="2"
+            />
+          </svg>
+          Categories 类别
+        </h3>
+        <ul className="blog-sidebar-list">
+          <li>
             <button
-              onClick={() => onCategorySelect(category)}
-              className={`w-full text-left px-3 py-2 rounded transition-colors ${
-                selectedCategory === category
-                  ? "bg-blue-100 text-blue-700"
-                  : "text-gray-700 hover:bg-gray-100"
+              onClick={() => onCategorySelect("all")}
+              className={`blog-sidebar-item ${
+                selectedCategory === "all" ? "active" : ""
               }`}
             >
-              {category}
+              <span className="blog-sidebar-item-text">所有文档</span>
+              <span className="blog-sidebar-item-count">
+                {categories.reduce((sum, cat) => sum + cat.count, 0)}
+              </span>
             </button>
           </li>
-        ))}
-      </ul>
+          {categories.map((category) => (
+            <li key={category.name}>
+              <button
+                onClick={() => onCategorySelect(category.name)}
+                className={`blog-sidebar-item ${
+                  selectedCategory === category.name ? "active" : ""
+                }`}
+              >
+                <span className="blog-sidebar-item-text">{category.name}</span>
+                <span className="blog-sidebar-item-count">
+                  {category.count}
+                </span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div className="blog-sidebar-section">
+        <h3 className="blog-sidebar-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+            <path
+              d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"
+              stroke="currentColor"
+              strokeWidth="2"
+            />
+            <line
+              x1="7"
+              y1="7"
+              x2="7.01"
+              y2="7"
+              stroke="currentColor"
+              strokeWidth="2"
+            />
+          </svg>
+          Tags 标签
+        </h3>
+        <div className="blog-tags-grid">
+          {tags.slice(0, 15).map((tag) => (
+            <span key={tag.name} className="blog-tag-item">
+              {tag.name}
+              <span className="blog-tag-count">{tag.count}</span>
+            </span>
+          ))}
+        </div>
+      </div>
     </div>
   );
 };
@@ -110,10 +185,12 @@ const HomePage: React.FC = () => {
   const allDocsData = useAllDocsData();
   const [selectedCategory, setSelectedCategory] = useState("all");
 
-  const { documents, categories } = useMemo(() => {
+  const { documents, categories, allTags } = useMemo(() => {
     const docs: DocumentCard[] = [];
-    const categorySet = new Set<string>();
+    const categoryMap = new Map<string, number>();
+    const tagMap = new Map<string, number>();
 
+    // 处理Docusaurus文档数据
     Object.entries(allDocsData).forEach(([pluginId, docsData]) => {
       const { versions } = docsData;
 
@@ -123,34 +200,56 @@ const HomePage: React.FC = () => {
           const fileName = doc.id.split("/").pop();
 
           if (fileName === "intro") {
-            // Get custom data from the imported object
+            // 获取自定义数据配置
             const customData = customDocsData[pluginId] || {};
 
             let category =
               customData.category ||
               (pluginId === "default" ? "Tutorial" : pluginId);
 
-            categorySet.add(category);
+            categoryMap.set(category, (categoryMap.get(category) || 0) + 1);
+
+            const docTags = customData.tags || frontMatter.tags || [];
+            docTags.forEach((tag) => {
+              tagMap.set(tag, (tagMap.get(tag) || 0) + 1);
+            });
 
             docs.push({
               id: docId,
-              // Use custom data, falling back to frontMatter or a default value
+              // 优先使用自定义数据，其次是frontMatter，最后是默认值
               title: customData.title || frontMatter.title || "Untitled",
               description:
                 customData.description || frontMatter.description || "暂无描述",
               permalink: doc.path,
-              category: customData.category,
+              category: category,
               lastUpdatedAt: doc.lastUpdatedAt ?? null,
-              tags: customData.tags || frontMatter.tags || [],
+              tags: docTags,
             });
           }
         });
       });
     });
 
+    const categoriesArray = Array.from(categoryMap.entries())
+      .map(([name, count]) => ({
+        name,
+        count,
+      }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+
+    const tagsArray = Array.from(tagMap.entries())
+      .map(([name, count]) => ({
+        name,
+        count,
+      }))
+      .sort((a, b) => b.count - a.count);
+
     return {
-      documents: docs,
-      categories: Array.from(categorySet).sort(),
+      documents: docs.sort(
+        (a, b) => (b.lastUpdatedAt || 0) - (a.lastUpdatedAt || 0)
+      ),
+      categories: categoriesArray,
+      allTags: tagsArray,
     };
   }, [allDocsData]);
 
@@ -161,47 +260,36 @@ const HomePage: React.FC = () => {
   }, [documents, selectedCategory]);
 
   return (
-    <div className="container mx-auto px-6 py-12">
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold text-gray-900 mb-4">文档中心</h1>
-        <p className="text-xl text-gray-600">浏览我们的文档、教程和 API 参考</p>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-        <div className="lg:col-span-3 space-y-8">
-          <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-semibold">
-              {selectedCategory === "all" ? "所有文档" : selectedCategory}
-              <span className="text-lg text-gray-500 ml-2">
-                ({filteredDocuments.length})
-              </span>
-            </h2>
+    <div className="blog-layout-container">
+      <div className="blog-container">
+        <header className="blog-header-wrapper">
+          <div className="blog-header-content">
+            <h1 className="blog-main-title">文档中心</h1>
+            <p className="blog-main-subtitle">技术文档 · 教程指南 · 开源项目</p>
           </div>
+        </header>
 
-          <div className="grid gap-6">
+        <div className="blog-content-wrapper">
+          <main className="blog-main-content">
             {filteredDocuments.map((doc) => (
-              <DocumentCardComponent key={doc.id} {...doc} />
+              <DocumentListItem key={doc.id} {...doc} />
             ))}
 
             {filteredDocuments.length === 0 && (
-              <div className="text-center py-12">
-                <div className="text-gray-500 text-lg">没有找到匹配的文档</div>
-                <div className="text-sm text-gray-400 mt-2">
-                  尝试选择不同的分类
-                </div>
+              <div className="blog-empty-state">
+                <p>没有找到匹配的文档</p>
               </div>
             )}
-          </div>
-        </div>
+          </main>
 
-        <div className="lg:col-span-1">
-          <div className="sticky top-6">
-            <CategorySidebarComponent
+          <aside className="blog-sidebar-wrapper">
+            <CategorySidebar
               categories={categories}
+              tags={allTags}
               selectedCategory={selectedCategory}
               onCategorySelect={setSelectedCategory}
             />
-          </div>
+          </aside>
         </div>
       </div>
     </div>
