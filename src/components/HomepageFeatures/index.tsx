@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useAllDocsData } from "@docusaurus/plugin-content-docs/client";
 import Link from "@docusaurus/Link";
 import { customDocsData } from "../../data/docsData";
@@ -8,16 +8,22 @@ interface DocumentCard {
   title: string;
   description: string;
   permalink: string;
-  category: string;
+  category: string; // 存储标准化后的值（小写）
   lastUpdatedAt?: number;
   tags?: string[];
 }
+
+// 工具函数：美化显示 category（首字母大写）
+const capitalize = (str: string) => {
+  if (!str) return str;
+  return str.charAt(0).toUpperCase() + str.slice(1);
+};
 
 const DocumentListItem: React.FC<DocumentCard> = ({
   title,
   description,
   permalink,
-  category,
+  category, // 内部是小写
   lastUpdatedAt,
   tags = [],
 }) => {
@@ -84,7 +90,7 @@ const DocumentListItem: React.FC<DocumentCard> = ({
                 strokeWidth="2"
               />
             </svg>
-            {category}
+            {capitalize(category)} {/* 显示时美化 */}
           </span>
 
           {tags.map((tag, index) => (
@@ -139,7 +145,9 @@ const CategorySidebar: React.FC<{
                   selectedCategory === category.name ? "active" : ""
                 }`}
               >
-                <span className="blog-sidebar-item-text">{category.name}</span>
+                <span className="blog-sidebar-item-text">
+                  {capitalize(category.name)} {/* 显示时美化 */}
+                </span>
                 <span className="blog-sidebar-item-count">
                   {category.count}
                 </span>
@@ -185,12 +193,12 @@ const HomePage: React.FC = () => {
   const allDocsData = useAllDocsData();
   const [selectedCategory, setSelectedCategory] = useState("all");
 
+  // ✅ 核心修改：标准化 category + 确保每次返回新数组引用
   const { documents, categories, allTags } = useMemo(() => {
-    const docs: DocumentCard[] = [];
+    const docs: DocumentCard[] = []; // 每次全新数组
     const categoryMap = new Map<string, number>();
     const tagMap = new Map<string, number>();
 
-    // 处理Docusaurus文档数据
     Object.entries(allDocsData).forEach(([pluginId, docsData]) => {
       const { versions } = docsData;
 
@@ -200,12 +208,13 @@ const HomePage: React.FC = () => {
           const fileName = doc.id.split("/").pop();
 
           if (fileName === "intro") {
-            // 获取自定义数据配置
             const customData = customDocsData[pluginId] || {};
 
-            let category =
+            // ✅ 标准化 category：统一小写 + trim
+            let rawCategory =
               customData.category ||
-              (pluginId === "default" ? "Tutorial" : pluginId);
+              (pluginId === "default" ? "tutorial" : pluginId);
+            let category = rawCategory.trim().toLowerCase();
 
             categoryMap.set(category, (categoryMap.get(category) || 0) + 1);
 
@@ -215,13 +224,12 @@ const HomePage: React.FC = () => {
             });
 
             docs.push({
-              id: docId,
-              // 优先使用自定义数据，其次是frontMatter，最后是默认值
+              id: `${pluginId}/${docId}`,
               title: customData.title || frontMatter.title || "Untitled",
               description:
                 customData.description || frontMatter.description || "暂无描述",
               permalink: doc.path,
-              category: category,
+              category, // ✅ 存储标准化后的值
               lastUpdatedAt: doc.lastUpdatedAt ?? null,
               tags: docTags,
             });
@@ -244,20 +252,38 @@ const HomePage: React.FC = () => {
       }))
       .sort((a, b) => b.count - a.count);
 
+    // ✅ 确保返回全新数组引用，避免 useMemo 缓存不更新
     return {
-      documents: docs.sort(
+      documents: [...docs].sort(
         (a, b) => (b.lastUpdatedAt || 0) - (a.lastUpdatedAt || 0)
       ),
-      categories: categoriesArray,
-      allTags: tagsArray,
+      categories: [...categoriesArray],
+      allTags: [...tagsArray],
     };
   }, [allDocsData]);
 
+  // ✅ 核心修改：过滤时也标准化 selectedCategory + 强依赖 documents 引用
   const filteredDocuments = useMemo(() => {
+    const target =
+      selectedCategory === "all"
+        ? "all"
+        : selectedCategory.trim().toLowerCase();
+
     return documents.filter((doc) => {
-      return selectedCategory === "all" || doc.category === selectedCategory;
+      if (target === "all") return true;
+      return doc.category === target; // ✅ doc.category 已标准化
     });
-  }, [documents, selectedCategory]);
+  }, [documents, selectedCategory]); // ✅ 依赖项完整
+
+  // 🧪 可选：调试日志（上线前可移除）
+  useEffect(() => {
+    console.log("🎯 Selected Category:", selectedCategory);
+    console.log("📄 Filtered Document Count:", filteredDocuments.length);
+    console.log(
+      "📄 Filtered Docs Titles:",
+      filteredDocuments.map((d) => d.title)
+    );
+  }, [filteredDocuments, selectedCategory]);
 
   return (
     <div className="blog-layout-container">

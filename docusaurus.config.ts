@@ -6,7 +6,8 @@ import type * as Preset from "@docusaurus/preset-classic";
 
 const config: Config = {
   title: "Haoyuehxの Docs Lib",
-  tagline: "Dinosaurs are cool",
+  tagline:
+    "Programs are meant to be read by humans and only incidentally for computers to execute.",
   //   favicon: "img/favicon.ico",
 
   // Future flags, see https://docusaurus.io/docs/api/docusaurus-config#future
@@ -61,6 +62,15 @@ const config: Config = {
     [
       "@docusaurus/plugin-content-docs",
       {
+        id: "csapp", // Give the new docs instance a unique ID
+        path: "csapp",
+        routeBasePath: "csapp",
+        sidebarPath: require.resolve("./sidebars.ts"),
+      },
+    ],
+    [
+      "@docusaurus/plugin-content-docs",
+      {
         id: "test", // Give the new docs instance a unique ID
         path: "test", // The directory where your API docs markdown files will live
         routeBasePath: "test", // The base path for your API docs on the website
@@ -83,10 +93,10 @@ const config: Config = {
     // image: "img/docusaurus-social-card.jpg",
     navbar: {
       title: "Haoyuehx docs",
-    //   logo: {
-    //     alt: "My Site Logo",
-    //     src: "img/logo.svg",
-    //   },
+      //   logo: {
+      //     alt: "My Site Logo",
+      //     src: "img/logo.svg",
+      //   },
       items: [
         {
           type: "docSidebar",
